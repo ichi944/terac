@@ -1,0 +1,33 @@
+[package]
+name = "terac"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = "0.4.4"
+tower = "0.4.11"
+
+serde = { version = "1.0", features = ["derive"]}
+serde_json = "1.0.75"
+tokio = { version = "1.0", features = ["full"] }
+dotenv = "0.15"
+async-graphql = "3.0.29"
+async-graphql-axum = "3.0.29"
+openid = "0.9.3"
+alcoholic_jwt = "1.0.1"
+reqwest = "0.11.9"
+askama = "0.11"
+base64-url = "1"
+
+[dependencies.sea-orm]
+version = "^0.5.0"
+
+features = ["macros", "runtime-tokio-native-tls", "debug-print"]
+default-features = false
+
+[features]
+default = ["sqlx-mysql"]
+sqlx-mysql = ["sea-orm/sqlx-mysql"]
+sqlx-postgres = ["sea-orm/sqlx-postgres"]
