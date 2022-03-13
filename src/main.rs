@@ -7,7 +7,9 @@ use axum::{
     response::{IntoResponse},
     extract::Extension,
 };
+mod models;
 use models::user::User;
+use models::result::{CourseResult};
 use tower::ServiceBuilder;
 use std::net::SocketAddr;
 // https://www.sheshbabu.com/posts/rust-module-system/
@@ -17,7 +19,7 @@ use handlers::{
     message_handler,
     auth_handler,
 };
-mod models;
+use sea_orm::{prelude::*, ActiveValue::*, IntoActiveModel};
 use sea_orm::{Database, DatabaseConnection, EntityTrait};
 use std::{env};
 use async_graphql::{Object, Context};
@@ -44,7 +46,25 @@ impl Query {
     }
 }
 
-pub type ApiSchema = Schema<Query, EmptyMutation, EmptySubscription>;
+pub struct Mutation;
+
+#[Object]
+impl Mutation {
+    async fn create_result<'ctx>(&self, ctx: &Context<'ctx>, user_id: i32, course_id: i32) -> CourseResult {
+        let db = ctx.data::<DatabaseConnection>().unwrap();
+        let res = models::result::ActiveModel {
+            user_id: Set(user_id),
+            course_id: Set(course_id),
+            ..Default::default()
+        }.save(db)
+        .await
+        .expect("save failed");
+
+        CourseResult::from(res)
+    }
+}
+
+pub type ApiSchema = Schema<Query, Mutation, EmptySubscription>;
 async fn graphql_handler(
     schema: Extension<ApiSchema>,
     req: GraphQLRequest,
@@ -98,7 +118,7 @@ async fn main() {
     .await
     .expect("Database connection failed");
 
-    let schema = Schema::build(Query, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(Query, Mutation, EmptySubscription)
         .data(db2)
         .finish();
 

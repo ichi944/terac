@@ -27,6 +27,15 @@ impl From<Model> for CourseResult {
         }
     }
 }
+impl From<ActiveModel> for CourseResult {
+    fn from(from: ActiveModel) -> CourseResult {
+        CourseResult {
+            id: from.id.unwrap(),
+            user_id: from.user_id.unwrap(),
+            course_id: from.course_id.unwrap(),
+        }
+    }
+}
 
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Relation {
