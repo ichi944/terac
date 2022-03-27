@@ -20,7 +20,10 @@ use serde_json::json;
 use alcoholic_jwt::{JWKS, Validation, validate, token_kid};
 use base64_url;
 use sea_orm::{prelude::*, ActiveValue::*, IntoActiveModel};
+use tower_cookies::{Cookies, Cookie};
 use crate::models::user;
+use crate::models::session;
+use crate::utils::generate_session_id_string;
 
 pub async fn login() -> impl IntoResponse {
     let template = LoginTemplate {};
@@ -80,6 +83,7 @@ pub struct CallbackResponse {
 
 pub async fn callback(
     payload: Query<TokenPayload>,
+    cookies: Cookies,
     Extension(jwks): Extension<String>,
     Extension(ref db): Extension<DatabaseConnection>,
 ) -> Result<Json<CallbackResponse>, AuthError> {
@@ -117,6 +121,22 @@ pub async fn callback(
             .await
             .expect("could not save user instance")
     };
+
+    // current_user.
+    let session_id = generate_session_id_string::invoke();
+    let _session = session::ActiveModel {
+        session_key: Set(session_id.clone()),
+        user_id: current_user.id,
+        payload: Set("".to_string()),
+        last_activity: Set(16231415),
+        ..Default::default()
+    }
+    .save(db)
+    .await
+    .expect("Could not save session");
+
+    cookies.add(Cookie::new("axum_session", session_id));
+
 
     Ok(Json(CallbackResponse {
         email: current_user.email.unwrap(),

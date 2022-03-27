@@ -19,17 +19,20 @@ use handlers::{
     message_handler,
     auth_handler,
 };
-use sea_orm::{prelude::*, ActiveValue::*, IntoActiveModel};
+use sea_orm::{prelude::*, ActiveValue::*};
 use sea_orm::{Database, DatabaseConnection, EntityTrait};
 use std::{env};
 use async_graphql::{Object, Context};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 
 use openid::DiscoveredClient;
 use std::sync::Arc;
 
+use tower_cookies::CookieManagerLayer;
+
+mod utils;
 
 // GraphQL
 pub struct Query;
@@ -131,6 +134,7 @@ async fn main() {
         .layer(AddExtensionLayer::new(schema))
         .layer(AddExtensionLayer::new(client))
         .layer(AddExtensionLayer::new(jwks))
+        .layer(CookieManagerLayer::new())
         .layer( 
             ServiceBuilder::new()
                 .layer(AddExtensionLayer::new(db))
