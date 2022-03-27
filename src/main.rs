@@ -18,6 +18,7 @@ use handlers::{
     user_handler,
     message_handler,
     auth_handler,
+    home_handler,
 };
 use sea_orm::{prelude::*, ActiveValue::*};
 use sea_orm::{Database, DatabaseConnection, EntityTrait};
@@ -129,6 +130,7 @@ async fn main() {
         .route("/", get(message_handler::get))
         .route("/login", get(auth_handler::login))
         .route("/auth/callback", get(auth_handler::callback))
+        .route("/home", get(home_handler::index))
         .route("/users", get(user_handler::index))
         .route("/graphql", get(graphql_playground).post(graphql_handler))
         .layer(AddExtensionLayer::new(schema))

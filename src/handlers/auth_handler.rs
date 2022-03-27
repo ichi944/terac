@@ -1,4 +1,4 @@
-use std::str;
+use std::{str, env};
 use axum::{
     body::{self, Full},
     response::{
@@ -26,13 +26,16 @@ use crate::models::session;
 use crate::utils::generate_session_id_string;
 
 pub async fn login() -> impl IntoResponse {
-    let template = LoginTemplate {};
+    let client_id = env::var("OIDC_CLIENT_ID").expect("no client id on .env");
+    let template = LoginTemplate { client_id };
     HtmlTemplate(template)
 }
 
 #[derive(Template)]
 #[template(path = "login.html")]
-pub struct LoginTemplate {}
+pub struct LoginTemplate {
+    client_id: String,
+}
 
 struct HtmlTemplate<T>(T);
 
@@ -126,7 +129,7 @@ pub async fn callback(
     let session_id = generate_session_id_string::invoke();
     let _session = session::ActiveModel {
         session_key: Set(session_id.clone()),
-        user_id: current_user.id,
+        user_id: Set(Some(current_user.id.unwrap())),
         payload: Set("".to_string()),
         last_activity: Set(16231415),
         ..Default::default()
@@ -135,7 +138,9 @@ pub async fn callback(
     .await
     .expect("Could not save session");
 
-    cookies.add(Cookie::new("axum_session", session_id));
+    let mut session_cookie = Cookie::new("axum_session", session_id);
+    session_cookie.set_path("/");
+    cookies.add(session_cookie);
 
 
     Ok(Json(CallbackResponse {
