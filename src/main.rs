@@ -34,6 +34,7 @@ use std::sync::Arc;
 use tower_cookies::CookieManagerLayer;
 
 mod utils;
+mod middlewares;
 
 // GraphQL
 pub struct Query;

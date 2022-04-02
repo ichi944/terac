@@ -6,38 +6,22 @@ use axum::{
         Html,
     },
     http::StatusCode,
-    extract::{
-        Extension,
-    }
 };
 use askama::Template;
-use tower_cookies::Cookies;
-use sea_orm::{prelude::*};
-use crate::models::session;
+use crate::middlewares::app_auth::AppAuth;
 
 pub async fn index(
-    cookies: Cookies,
-    Extension(ref db): Extension<DatabaseConnection>,
+    auth: AppAuth,
     ) -> impl IntoResponse {
-    let session_id: String = cookies
-        .get("axum_session")
-        .and_then(|c| c.value().parse().ok())
-        .unwrap_or("".to_string());
+    // let session_id: String = cookies
+    //     .get("axum_session")
+    //     .and_then(|c| c.value().parse().ok())
+    //     .unwrap_or("".to_string());
     
-    let session = session::Entity::find()
-        .filter(session::Column::SessionKey.eq(session_id.to_owned()))
-        .one(db)
-        .await
-        .unwrap();
-    
-    let is_logged_in = match session {
-        Some(m) => match m.user_id {
-            Some(_) => true,
-            None => false,
-        }
-        None => false,
+    let is_logged_in = match auth {
+        AppAuth::FoundCurrentUserId(_) => true,
+        AppAuth::None => false,
     };
-    
     
     let template = HomeTemplate { is_logged_in };
     HtmlTemplate(template)
