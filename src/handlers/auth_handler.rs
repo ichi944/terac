@@ -24,6 +24,7 @@ use tower_cookies::{Cookies, Cookie};
 use crate::models::user;
 use crate::models::session;
 use crate::utils::generate_session_id_string;
+use chrono::{Utc};
 
 pub async fn login() -> impl IntoResponse {
     let client_id = env::var("OIDC_CLIENT_ID").expect("no client id on .env");
@@ -127,11 +128,12 @@ pub async fn callback(
 
     // current_user.
     let session_id = generate_session_id_string::invoke();
+    let now = Utc::now().timestamp() as i32;
     let _session = session::ActiveModel {
         session_key: Set(session_id.clone()),
         user_id: Set(Some(current_user.id.unwrap())),
         payload: Set("".to_string()),
-        last_activity: Set(16231415),
+        last_activity: Set(now),
         ..Default::default()
     }
     .save(db)
