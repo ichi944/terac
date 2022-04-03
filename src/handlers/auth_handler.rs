@@ -5,6 +5,7 @@ use axum::{
         IntoResponse,
         Response,
         Html,
+        Redirect,
     },
     http::StatusCode,
     Json,
@@ -19,11 +20,18 @@ use serde_json;
 use serde_json::json;
 use alcoholic_jwt::{JWKS, Validation, validate, token_kid};
 use base64_url;
-use sea_orm::{prelude::*, ActiveValue::*, IntoActiveModel};
+use sea_orm::{
+    prelude::*,
+    ActiveValue::*,
+    IntoActiveModel,
+    query::*,
+    sea_query::Expr,
+};
 use tower_cookies::{Cookies, Cookie};
 use crate::models::user;
 use crate::models::session;
 use crate::utils::generate_session_id_string;
+use crate::middlewares::app_auth::AppAuth;
 use chrono::{Utc};
 
 pub async fn login() -> impl IntoResponse {
@@ -167,4 +175,27 @@ pub struct Claims {
     iat: usize,
     exp: usize,
     jti: String,
+}
+
+pub async fn logout(
+    auth: AppAuth,
+    Extension(ref db): Extension<DatabaseConnection>
+    ) -> impl IntoResponse {
+
+    let (is_logged_in, user_id) = match auth {
+        AppAuth::FoundCurrentUserId(user_id) => (true, Some(user_id)),
+        AppAuth::None => (false, None),
+    };
+    if is_logged_in {
+        let update_result = Update::many(session::Entity)
+            .col_expr(session::Column::UserId, Expr::value(Value::Int(None)))
+            .filter(session::Column::UserId.eq(user_id))
+            .exec(db)
+            .await
+            .unwrap();
+        println!("@auth_handler::logout rows affected: {}", update_result.rows_affected);
+    }
+
+    Redirect::temporary("/".parse().unwrap())
+
 }

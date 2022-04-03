@@ -16,9 +16,9 @@ use std::net::SocketAddr;
 mod handlers;
 use handlers::{
     user_handler,
-    message_handler,
     auth_handler,
     home_handler,
+    app_handler,
 };
 use sea_orm::{prelude::*, ActiveValue::*};
 use sea_orm::{Database, DatabaseConnection, EntityTrait};
@@ -128,10 +128,11 @@ async fn main() {
         .finish();
 
     let app = Router::new()
-        .route("/", get(message_handler::get))
+        .route("/", get(home_handler::index))
         .route("/login", get(auth_handler::login))
         .route("/auth/callback", get(auth_handler::callback))
-        .route("/home", get(home_handler::index))
+        .route("/logout", get(auth_handler::logout))
+        .route("/app", get(app_handler::index))
         .route("/users", get(user_handler::index))
         .route("/graphql", get(graphql_playground).post(graphql_handler))
         .layer(AddExtensionLayer::new(schema))
