@@ -8,30 +8,15 @@ use axum::{
     http::StatusCode,
 };
 use askama::Template;
-use crate::middlewares::app_auth::AppAuth;
 
-pub async fn index(
-    auth: AppAuth,
-    ) -> impl IntoResponse {
-    // let session_id: String = cookies
-    //     .get("axum_session")
-    //     .and_then(|c| c.value().parse().ok())
-    //     .unwrap_or("".to_string());
-    
-    let is_logged_in = match auth {
-        AppAuth::FoundCurrentUserId(_) => true,
-        AppAuth::None => false,
-    };
-    
-    let template = HomeTemplate { is_logged_in };
+pub async fn index() -> impl IntoResponse {  
+    let template = HomeTemplate {};
     HtmlTemplate(template)
 }
 
 #[derive(Template)]
 #[template(path = "home.html")]
-pub struct HomeTemplate {
-    is_logged_in: bool,
-}
+pub struct HomeTemplate {}
 
 struct HtmlTemplate<T>(T);
 

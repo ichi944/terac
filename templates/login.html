@@ -26,7 +26,11 @@ function onSignIn(googleUser) {
   xhr.open('GET', `http://localhost:3000/auth/callback?id_token=${id_token}&access_token=${access_token}`);
   // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xhr.onload = function() {
-    console.log('Signed in as: ' + xhr.responseText);
+    const result = JSON.parse(xhr.responseText);
+    console.log('Signed in as: ' + result.status);
+    if (result.status === 'ok') {
+      window.location.href = '/app'
+    }
   };
   xhr.send();
 }

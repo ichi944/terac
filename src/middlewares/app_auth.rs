@@ -26,6 +26,8 @@ where
     type Rejection = (StatusCode, &'static str);
 
     async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
+
+        println!("@AppAuth: start to check an auth");
         let Extension(ref db) = Extension::<DatabaseConnection>::from_request(req)
             .await
             .expect("@user_id_from_session: database connection was not loaded");
@@ -44,11 +46,14 @@ where
             .filter(session::Column::SessionKey.eq(session_key.unwrap().to_owned()))
             .one(db)
             .await
-            .unwrap()
             .unwrap();
-        match session_model.user_id {
+        let session_model_unwrapped = match session_model {
+            Some(model) => model,
+            _ => return Err((StatusCode::UNAUTHORIZED, "unauthorized")),
+        };
+        match session_model_unwrapped.user_id {
             Some(user_id) => Ok(Self::FoundCurrentUserId(user_id)),
-            None => Ok(Self::None), 
+            _ => Err((StatusCode::UNAUTHORIZED, "unauthorized")), 
         }
     }
 }

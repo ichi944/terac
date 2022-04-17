@@ -18,7 +18,7 @@ pub async fn index(
         AppAuth::FoundCurrentUserId(_) => true,
         AppAuth::None => false,
     };
-    
+
     let template = AppTemplate { is_logged_in };
     HtmlTemplate(template)
 }

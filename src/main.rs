@@ -5,7 +5,7 @@ use axum::{
     Router,
     AddExtensionLayer,
     response::{IntoResponse},
-    extract::Extension,
+    extract::{Extension, extractor_middleware},
 };
 mod models;
 use models::user::User;
@@ -32,6 +32,8 @@ use openid::DiscoveredClient;
 use std::sync::Arc;
 
 use tower_cookies::CookieManagerLayer;
+
+use crate::middlewares::app_auth::{AppAuth};
 
 mod utils;
 mod middlewares;
@@ -128,11 +130,12 @@ async fn main() {
         .finish();
 
     let app = Router::new()
+        .route("/app", get(app_handler::index))
+        .route_layer(extractor_middleware::<AppAuth>())
         .route("/", get(home_handler::index))
         .route("/login", get(auth_handler::login))
         .route("/auth/callback", get(auth_handler::callback))
         .route("/logout", get(auth_handler::logout))
-        .route("/app", get(app_handler::index))
         .route("/users", get(user_handler::index))
         .route("/graphql", get(graphql_playground).post(graphql_handler))
         .layer(AddExtensionLayer::new(schema))

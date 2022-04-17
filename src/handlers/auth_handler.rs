@@ -90,7 +90,7 @@ pub struct TokenPayload {
 
 #[derive(Debug, Serialize)]
 pub struct CallbackResponse {
-    email: String,
+    status: String,
 }
 
 pub async fn callback(
@@ -154,7 +154,7 @@ pub async fn callback(
 
 
     Ok(Json(CallbackResponse {
-        email: current_user.email.unwrap(),
+        status: "ok".to_string(),
     }))
 }
 
