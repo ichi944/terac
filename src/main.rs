@@ -3,9 +3,9 @@ use axum::response;
 use axum::{
     routing::{get},
     Router,
-    AddExtensionLayer,
     response::{IntoResponse},
-    extract::{Extension, extractor_middleware},
+    extract::{Extension},
+    middleware::from_extractor,
 };
 mod models;
 use models::user::User;
@@ -131,20 +131,20 @@ async fn main() {
 
     let app = Router::new()
         .route("/app", get(app_handler::index))
-        .route_layer(extractor_middleware::<AppAuth>())
+        .route_layer(from_extractor::<AppAuth>())
         .route("/", get(home_handler::index))
         .route("/login", get(auth_handler::login))
         .route("/auth/callback", get(auth_handler::callback))
         .route("/logout", get(auth_handler::logout))
         .route("/users", get(user_handler::index))
         .route("/graphql", get(graphql_playground).post(graphql_handler))
-        .layer(AddExtensionLayer::new(schema))
-        .layer(AddExtensionLayer::new(client))
-        .layer(AddExtensionLayer::new(jwks))
+        .layer(Extension(schema))
+        .layer(Extension(client))
+        .layer(Extension(jwks))
         .layer(CookieManagerLayer::new())
         .layer( 
             ServiceBuilder::new()
-                .layer(AddExtensionLayer::new(db))
+                .layer(Extension(db))
         );
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

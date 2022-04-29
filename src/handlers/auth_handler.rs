@@ -196,6 +196,6 @@ pub async fn logout(
         println!("@auth_handler::logout rows affected: {}", update_result.rows_affected);
     }
 
-    Redirect::temporary("/".parse().unwrap())
+    Redirect::temporary("/")
 
 }
