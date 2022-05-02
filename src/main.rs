@@ -30,7 +30,6 @@ use async_graphql::{EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 
 use openid::DiscoveredClient;
-use std::sync::Arc;
 
 use tower_cookies::CookieManagerLayer;
 
@@ -119,13 +118,12 @@ async fn main() {
             issuer)
         .await.unwrap(),
         );
-    
+
     // get jwks from "https://www.googleapis.com/oauth2/v3/certs
     let jwks_url = reqwest::Url::parse(&"https://www.googleapis.com/oauth2/v3/certs").unwrap();
     let response = reqwest::get(jwks_url).await.unwrap();
     let jwks = response.text().await.unwrap();
     println!("{}", jwks);
-    
 
 
     let db_url = env::var("DATABASE_URL").expect("DATABASE is not defined.");
