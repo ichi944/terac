@@ -1,4 +1,5 @@
 use axum::{
+    Extension,
     body::{self, Full},
     response::{
         IntoResponse,
@@ -7,25 +8,29 @@ use axum::{
     },
     http::StatusCode,
 };
+use std::sync::Arc;
 use askama::Template;
-use crate::middlewares::app_auth::AppAuth;
+use crate::{middlewares::app_auth::AppAuth, AppEnv};
 
 pub async fn index(
     auth: AppAuth,
+    Extension(app_env): Extension<Arc<AppEnv>>,
     ) -> impl IntoResponse {
 
     let is_logged_in = match auth {
         AppAuth::FoundCurrentUserId(_) => true,
         AppAuth::None => false,
     };
+    let mode = app_env.mode.clone();
 
-    let template = AppTemplate { is_logged_in };
+    let template = AppTemplate { mode, is_logged_in };
     HtmlTemplate(template)
 }
 
 #[derive(Template)]
 #[template(path = "app.html")]
 pub struct AppTemplate {
+    mode: String,
     is_logged_in: bool,
 }
 

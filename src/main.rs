@@ -12,6 +12,7 @@ use models::user::User;
 use models::result::{CourseResult};
 use tower::ServiceBuilder;
 use std::net::SocketAddr;
+use std::sync::Arc;
 // https://www.sheshbabu.com/posts/rust-module-system/
 mod handlers;
 use handlers::{
@@ -86,10 +87,23 @@ async fn graphql_playground() -> impl IntoResponse {
 // Ref
 // https://blog-dry.com/entry/2021/12/26/002649
 
+pub struct AppEnv {
+    mode: String,
+}
+
 #[tokio::main]
 async fn main() {
 
     dotenv::dotenv().ok();
+
+    let mode_string = match &*env::var("MODE").expect("no mode on .env") {
+        "development" => "development".to_string(),
+        "production" => "production".to_string(),
+        _ => panic!("MODE is invalid value on .env"),
+    };
+    let app_env = Arc::new(AppEnv {
+        mode: mode_string,
+    });
 
     // OIDC Client
     let client_id = env::var("OIDC_CLIENT_ID").expect("no client id on .env");
@@ -138,16 +152,17 @@ async fn main() {
         .route("/logout", get(auth_handler::logout))
         .route("/users", get(user_handler::index))
         .route("/graphql", get(graphql_playground).post(graphql_handler))
+        .layer(Extension(app_env))
         .layer(Extension(schema))
         .layer(Extension(client))
         .layer(Extension(jwks))
         .layer(CookieManagerLayer::new())
-        .layer( 
+        .layer(
             ServiceBuilder::new()
                 .layer(Extension(db))
         );
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
