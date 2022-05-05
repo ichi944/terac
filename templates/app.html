@@ -17,11 +17,10 @@
     <title>App Screen</title>
   </head>
   <body>
-    <div>App</div>
     {% if is_logged_in %}
-    <div><a href="/logout">Logout</a></div>
+    <div><a href="/auth/logout">Logout</a></div>
     {% else %}
-    <div><a href="/login">Login</a></div>
+    <div><a href="/auth/login">Login</a></div>
     {% endif %}
     <div id="root"></div>
     {% if mode == "development" %}
