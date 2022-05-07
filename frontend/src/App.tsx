@@ -1,18 +1,15 @@
 import React, { useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, StatHelpTextProps } from "@chakra-ui/react";
 import { Home } from "./components/Home";
 import { AppDrawer } from "./components/AppDrawer";
+import {
+  RecoilRoot,
+} from "recoil";
 
 function App() {
-  const [drawerIsOpen, toggleDrawerIsOpen] = useState<boolean>(false);
-  const handleToggleDrawer = () => {
-    toggleDrawerIsOpen(!drawerIsOpen);
-  };
-  const onClose = () => {
-    toggleDrawerIsOpen(false);
-  };
+
   const handleClick = () => {
     console.log("ok");
     fetch("/graphql", {
@@ -39,16 +36,16 @@ function App() {
   };
   return (
     <React.StrictMode>
-      <ChakraProvider>
-        <div className="App">
-          <AppDrawer isOpen={drawerIsOpen} onClose={onClose} />
-          <header className="App-header">
-            <Home />
-            <button onClick={handleClick}>Fetch!</button>
-            <button onClick={handleToggleDrawer}>Toggle!</button>
-          </header>
-        </div>
-      </ChakraProvider>
+      <RecoilRoot>
+        <ChakraProvider>
+          <div className="App">
+            <header className="App-header">
+              <Home />
+              <button onClick={handleClick}>Fetch!</button>
+            </header>
+          </div>
+        </ChakraProvider>
+      </RecoilRoot>
     </React.StrictMode>
   );
 }
