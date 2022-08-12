@@ -1,15 +1,21 @@
-import React, { useState } from "react";
-import logo from "./logo.svg";
+import React from "react";
 import "./App.css";
-import { ChakraProvider, StatHelpTextProps } from "@chakra-ui/react";
+import { Initializer } from "./components/auth/Initializer";
 import { Home } from "./components/Home";
-import { AppDrawer } from "./components/AppDrawer";
+import { useRecoilValue } from "recoil";
+import { InitializeStateAtom } from "./atoms/InitializeStateAtom";
+
 import {
-  RecoilRoot,
-} from "recoil";
+  Link,
+  MakeGenerics,
+  Outlet,
+  ReactLocation,
+  Router,
+  Navigate,
+  useMatch,
+} from "@tanstack/react-location";
 
 function App() {
-
   const handleClick = () => {
     console.log("ok");
     fetch("/graphql", {
@@ -34,18 +40,24 @@ function App() {
       .then((res) => res.json())
       .then((json) => console.log("result", json));
   };
+  if (!useRecoilValue(InitializeStateAtom).initialized) {
+    return <Initializer />;
+  }
+  const authorized = true;
+  if (!authorized) {
+    return <Navigate to="/auth"></Navigate>;
+  }
   return (
     <React.StrictMode>
-      <RecoilRoot>
-        <ChakraProvider>
-          <div className="App">
-            <header className="App-header">
-              <Home />
-              <button onClick={handleClick}>Fetch!</button>
-            </header>
-          </div>
-        </ChakraProvider>
-      </RecoilRoot>
+      <div className="App">
+        <header className="App-header">
+          <Link to="app">go to app</Link>
+          <Link to="app/foo">go to Foo</Link>
+          <Home />
+          <button onClick={handleClick}>Fetch!!!!</button>
+        </header>
+      </div>
+      <Outlet />
     </React.StrictMode>
   );
 }
