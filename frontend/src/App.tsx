@@ -4,6 +4,7 @@ import { Initializer } from "./components/auth/Initializer";
 import { Home } from "./components/Home";
 import { useRecoilValue } from "recoil";
 import { InitializeStateAtom } from "./atoms/InitializeStateAtom";
+import { AuthStateAtom } from "./atoms/AuthStateAtom";
 
 import {
   Link,
@@ -40,12 +41,14 @@ function App() {
       .then((res) => res.json())
       .then((json) => console.log("result", json));
   };
-  if (!useRecoilValue(InitializeStateAtom).initialized) {
+  const initialized = useRecoilValue(InitializeStateAtom).initialized;
+  const authorized = useRecoilValue(AuthStateAtom).is_logged_in;
+  if (!initialized) {
     return <Initializer />;
   }
-  const authorized = true;
   if (!authorized) {
-    return <Navigate to="/auth"></Navigate>;
+    console.log('@App::not authorized')
+    window.location.href = '/auth/login';
   }
   return (
     <React.StrictMode>

@@ -16,6 +16,7 @@ export default defineConfig({
   server: {
     proxy: {
       '^/$': 'http://localhost:3001',
+      '^/api/': 'http://localhost:3001',
       '^/auth': 'http://localhost:3001',
       // '/app': 'http://localhost:3001',
       '^/graphql': 'http://localhost:3001',
