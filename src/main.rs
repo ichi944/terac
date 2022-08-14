@@ -1,7 +1,7 @@
 use axum::response;
 // use async_graphql::extensions::Extension;
 use axum::{
-    routing::{get},
+    routing::{get, post},
     Router,
     response::{IntoResponse},
     extract::{Extension},
@@ -20,6 +20,7 @@ use handlers::{
     auth_handler,
     home_handler,
     app_handler,
+    hello_handler,
 };
 use sea_orm::{prelude::*, ActiveValue::*};
 use sea_orm::{Database, DatabaseConnection, EntityTrait};
@@ -148,6 +149,7 @@ async fn main() {
         .route("/auth/login", get(auth_handler::login))
         .route("/auth/callback", get(auth_handler::callback))
         .route("/auth/logout", get(auth_handler::logout))
+        .route("/api/hello", post(hello_handler::index))
         .route("/users", get(user_handler::index))
         .route("/graphql", get(graphql_playground).post(graphql_handler))
         .layer(Extension(app_env))
